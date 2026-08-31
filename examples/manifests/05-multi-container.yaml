@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata: {name: multi, labels: {demo: multi}}
+spec:
+  initContainers:
+    - name: setup
+      image: busybox:1.37
+      command: ['sh','-c','echo "prepared by init at $(date -u +%T)" > /work/index.html']
+      volumeMounts: [{name: shared, mountPath: /work}]
+  containers:
+    - name: server
+      image: busybox:1.37
+      command: ['sh','-c','httpd -f -p 8080 -h /work']
+      volumeMounts: [{name: shared, mountPath: /work}]
+    - name: sidecar
+      image: busybox:1.37
+      command: ['sh','-c','sleep 3600']
+      volumeMounts: [{name: shared, mountPath: /work}]
+  volumes: [{name: shared, emptyDir: {}}]

@@ -1,0 +1,18 @@
+# ch 23. Satisfies the `restricted` Pod Security Standard.
+apiVersion: v1
+kind: Pod
+metadata: {name: good}
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    seccompProfile: {type: RuntimeDefault}
+  containers:
+    - name: c
+      image: busybox:1.37
+      command: ['sleep','300']
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities: {drop: ["ALL"]}

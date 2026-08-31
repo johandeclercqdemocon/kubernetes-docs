@@ -1,0 +1,56 @@
+# ch 7. Configuration and secrets.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pingd-config
+data:
+  LOG_LEVEL: "INFO"
+  PINGD_GREETING: "pong"
+  # A whole file, mounted as a volume rather than injected as env.
+  app.yaml: |
+    feature_flags:
+      new_router: false
+    timeouts:
+      upstream_seconds: 5
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pingd-secret
+type: Opaque
+stringData:
+  # ch 7: `stringData` takes plaintext and base64-encodes it for you.
+  # Note that a Secret is base64-encoded, NOT encrypted — anyone with `get
+  # secrets` in this namespace can read it. See ch 23 for what to do instead.
+  DATABASE_PASSWORD: "not-a-real-password"
+---
+# The same Deployment, consuming both. Applied over the base in ch 7.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pingd
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          envFrom:
+            - configMapRef:
+                name: pingd-config
+          env:
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pingd-secret
+                  key: DATABASE_PASSWORD
+          volumeMounts:
+            - name: config
+              mountPath: /etc/pingd
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: pingd-config
+            items:
+              - key: app.yaml
+                path: app.yaml

@@ -1,0 +1,23 @@
+# ch 13. Host- and path-based routing to the pingd Service.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pingd
+  annotations:
+    # Annotations are controller-specific. This is the Ingress API's core
+    # weakness and the reason the Gateway API exists.
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: pingd.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: {service: {name: pingd, port: {number: 80}}}
+    - http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend: {service: {name: pingd, port: {number: 80}}}

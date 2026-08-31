@@ -1,0 +1,13 @@
+# ch 15. Consuming the PVC. Deleting and recreating this pod keeps the data.
+apiVersion: v1
+kind: Pod
+metadata: {name: pvc-demo}
+spec:
+  containers:
+    - name: c
+      image: busybox:1.37
+      command: ['sh','-c','sleep 3600']
+      volumeMounts: [{name: data, mountPath: /data}]
+  volumes:
+    - name: data
+      persistentVolumeClaim: {claimName: pingd-data}

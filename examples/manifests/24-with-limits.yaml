@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: withlimits}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: withlimits}}
+  template:
+    metadata: {labels: {app: withlimits}}
+    spec:
+      containers:
+        - name: c
+          image: busybox:1.37
+          command: ['sleep','300']
+          resources: {requests: {cpu: 10m, memory: 16Mi}, limits: {cpu: 50m, memory: 32Mi}}

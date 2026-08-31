@@ -1,0 +1,25 @@
+# ch 24. Built-in CEL policy — no webhook, no extra component.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata: {name: require-limits}
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["deployments"]
+  validations:
+    - expression: "object.spec.template.spec.containers.all(c, has(c.resources) && has(c.resources.limits))"
+      message: "All containers must have resource limits."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata: {name: require-limits-binding}
+spec:
+  policyName: require-limits
+  validationActions: ["Deny"]
+  matchResources:
+    namespaceSelector:
+      matchLabels: {kubernetes.io/metadata.name: default}

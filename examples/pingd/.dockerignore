@@ -1,0 +1,19 @@
+# Chapter 9. Everything here is excluded from the build context, which makes
+# builds faster and prevents secrets and junk from ending up in the image.
+
+.git
+.gitignore
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.venv
+venv
+.env
+.env.*
+*.log
+.pytest_cache
+.mypy_cache
+.ruff_cache
+Dockerfile*
+compose*.yaml
+README.md

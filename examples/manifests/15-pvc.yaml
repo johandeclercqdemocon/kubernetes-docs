@@ -1,0 +1,9 @@
+# ch 15. With WaitForFirstConsumer this stays Pending until a pod uses it —
+# which is correct, not an error.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: pingd-data}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: standard
+  resources: {requests: {storage: 100Mi}}

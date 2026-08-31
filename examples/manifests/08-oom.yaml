@@ -1,0 +1,12 @@
+# ch 8. Allocates until the memory cgroup kills it. Measured on v1.37 this
+# reports exitCode 137 with reason "Error" — NOT "OOMKilled".
+apiVersion: v1
+kind: Pod
+metadata: {name: oom3, labels: {demo: oom}}
+spec:
+  restartPolicy: Always
+  containers:
+    - name: c
+      image: python:3.12-slim
+      command: ["python","-c","import time\nx=[]\nwhile True:\n    x.append(bytearray(20*1024*1024))\n    time.sleep(0.05)"]
+      resources: {requests: {memory: 128Mi}, limits: {memory: 128Mi}}

@@ -1,0 +1,86 @@
+# The pingd Deployment the book returns to from Chapter 6 onwards.
+# Every field here is explained somewhere; nothing is decoration.
+#
+#   kubectl apply -f 01-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pingd
+  labels:
+    app: pingd
+spec:
+  replicas: 3
+  selector:
+    # Immutable after creation (ch 6). Must match the pod template labels.
+    matchLabels:
+      app: pingd
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0        # ch 27: never go below desired capacity
+  template:
+    metadata:
+      labels:
+        app: pingd
+    spec:
+      # ch 23: enforced by the restricted Pod Security Standard.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: pingd:latest
+          imagePullPolicy: IfNotPresent    # ch 17: why :latest breaks in-cluster images
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: PINGD_VERSION
+              value: "1.0.0"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name       # ch 7: downward API
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          # ch 8: requests drive scheduling and QoS; limits drive throttling and OOM.
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 192Mi
+          # ch 9: three probes, three different jobs.
+          startupProbe:
+            httpGet: { path: /healthz, port: http }
+            failureThreshold: 30
+            periodSeconds: 1
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+            failureThreshold: 2
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      # ch 9: give the app time to drain before SIGKILL.
+      terminationGracePeriodSeconds: 30

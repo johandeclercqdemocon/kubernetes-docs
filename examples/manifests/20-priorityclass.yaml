@@ -1,0 +1,8 @@
+# ch 20. Workload tiers. Govern these centrally, or everything becomes high.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata: {name: high-priority}
+value: 1000000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: "Customer-facing services"

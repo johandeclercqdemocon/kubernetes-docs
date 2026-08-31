@@ -1,0 +1,20 @@
+# ch 8. Three pods, three QoS classes. The class is computed, not declared.
+apiVersion: v1
+kind: Pod
+metadata: {name: qos-guaranteed, labels: {demo: qos}}
+spec:
+  containers: [{name: c, image: busybox:1.37, command: [sleep, "300"],
+    resources: {requests: {cpu: 100m, memory: 64Mi}, limits: {cpu: 100m, memory: 64Mi}}}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: qos-burstable, labels: {demo: qos}}
+spec:
+  containers: [{name: c, image: busybox:1.37, command: [sleep, "300"],
+    resources: {requests: {cpu: 50m, memory: 32Mi}, limits: {cpu: 200m, memory: 128Mi}}}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: qos-besteffort, labels: {demo: qos}}
+spec:
+  containers: [{name: c, image: busybox:1.37, command: [sleep, "300"]}]

@@ -1,0 +1,6 @@
+apiVersion: example.com/v1alpha1
+kind: PingdService
+metadata: {name: demo}
+spec:
+  replicas: 3
+  version: "1.4.2"

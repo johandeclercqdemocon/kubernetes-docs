@@ -1,0 +1,35 @@
+# ch 11. A ClusterIP Service in front of the pingd pods.
+#
+# The selector is what binds Service to Pods — not the Deployment. A Service
+# knows nothing about Deployments; it matches labels, and whatever has those
+# labels receives traffic.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pingd
+  labels:
+    app: pingd
+spec:
+  type: ClusterIP
+  selector:
+    app: pingd
+  ports:
+    - name: http
+      port: 80            # the port the Service listens on
+      targetPort: http    # the named port on the pod — survives a container port change
+      protocol: TCP
+---
+# ch 11. A headless Service: no ClusterIP, DNS returns pod IPs directly.
+# Used for StatefulSets and for clients that want to do their own balancing.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pingd-headless
+spec:
+  clusterIP: None
+  selector:
+    app: pingd
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

@@ -1,0 +1,8 @@
+# ch 25. maxUnavailable scales with the Deployment; minAvailable==replicas
+# blocks drains forever.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: pingd}
+spec:
+  maxUnavailable: 1
+  selector: {matchLabels: {app: pingd}}

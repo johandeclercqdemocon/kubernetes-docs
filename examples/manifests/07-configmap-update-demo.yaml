@@ -1,0 +1,15 @@
+# ch 7. Reads the same ConfigMap key twice: once as an env var (frozen at
+# container start) and once as a mounted file (refreshed by the kubelet).
+apiVersion: v1
+kind: Pod
+metadata: {name: cmtest}
+spec:
+  containers:
+    - name: cmtest
+      image: busybox:1.37
+      command: ['sh','-c','while true; do echo "env=$GREETING file=$(cat /cfg/GREETING 2>/dev/null)"; sleep 5; done']
+      envFrom: [{configMapRef: {name: demo-cm}}]
+      volumeMounts: [{name: cfg, mountPath: /cfg}]
+  volumes:
+    - name: cfg
+      configMap: {name: demo-cm}

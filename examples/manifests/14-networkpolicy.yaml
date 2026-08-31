@@ -1,0 +1,18 @@
+# ch 14. Default-deny ingress for the namespace, then allow only what is needed.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: default-deny-ingress}
+spec:
+  podSelector: {}          # every pod in this namespace
+  policyTypes: [Ingress]   # no ingress rules = deny all ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-pingd-from-client}
+spec:
+  podSelector: {matchLabels: {app: pingd}}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: {matchLabels: {role: client}}
+      ports: [{protocol: TCP, port: 8000}]
