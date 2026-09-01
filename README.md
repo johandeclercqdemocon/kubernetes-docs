@@ -138,6 +138,39 @@ must not be interrupted mid-flight).
 
 ---
 
+## Where this fits
+
+Four books, written in the same style and to the same rule — every output was produced by
+running the code. They form **two independent pairs**:
+
+| | Book | What it is |
+|---|---|---|
+|  | [Docker: From First Container to Production](https://github.com/johandeclercqdemocon/docker-docs) | the unit of deployment |
+| **→** | [Kubernetes: From First Pod to Production](https://github.com/johandeclercqdemocon/kubernetes-docs) | running many of those units |
+|  | [LangChain: From First Call to Production](https://github.com/johandeclercqdemocon/langchain-docs) | the components of an LLM application |
+|  | [LangGraph: From First Graph to Production](https://github.com/johandeclercqdemocon/langgraph-docs) | the runtime beneath them |
+
+**There is no sequence that runs all four.** Docker → Kubernetes and LangChain → LangGraph are
+independent: nothing in LangChain requires a container, and nothing in Docker mentions models.
+The only join is deployment — an LLM application eventually has to be packaged and run
+somewhere.
+
+Both pairs have the same shape, and it tells you how to read the second book of each:
+
+> **First book: the thing. Second book: the orchestration layer you should adopt reluctantly.**
+
+Kubernetes Chapter 1 argues against adopting Kubernetes without a present constraint.
+LangGraph Chapter 1 argues that a hand-written `while` loop is a legitimate agent. Both mean
+it — read them when a requirement forces you, not to be thorough.
+
+### You are here
+
+The second of the infrastructure pair. If you have not used containers, read **Docker**
+first — this book assumes you know what an image, a layer and a container are.
+
+Chapter 1's argument against adopting Kubernetes is sincere. The rest of the book assumes you
+read it and have a constraint anyway.
+
 ## Conventions
 
 Commands run against the cluster:
