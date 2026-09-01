@@ -140,8 +140,8 @@ must not be interrupted mid-flight).
 
 ## Where this fits
 
-Four books, written in the same style and to the same rule — every output was produced by
-running the code. They form **two independent pairs**:
+Five books, written in the same style and to the same rule — every output was produced by
+running the code. They form **a pair and a stack**:
 
 | | Book | What it is |
 |---|---|---|
@@ -149,19 +149,23 @@ running the code. They form **two independent pairs**:
 | **→** | [Kubernetes: From First Pod to Production](https://github.com/johandeclercqdemocon/kubernetes-docs) | running many of those units |
 |  | [LangChain: From First Call to Production](https://github.com/johandeclercqdemocon/langchain-docs) | the components of an LLM application |
 |  | [LangGraph: From First Graph to Production](https://github.com/johandeclercqdemocon/langgraph-docs) | the runtime beneath them |
+|   | [Deep Agents: From First Harness to Production](https://github.com/johandeclercqdemocon/deepagents-docs) | a ready-made harness on top |
 
-**There is no sequence that runs all four.** Docker → Kubernetes and LangChain → LangGraph are
-independent: nothing in LangChain requires a container, and nothing in Docker mentions models.
-The only join is deployment — an LLM application eventually has to be packaged and run
-somewhere.
+**There is no sequence that runs all five.** They fall into two groups that share nothing:
+**Docker → Kubernetes** (infrastructure) and **LangChain → LangGraph / Deep Agents** (LLM
+applications). Nothing in LangChain requires a container, and nothing in Docker mentions
+models. The only join is deployment.
 
-Both pairs have the same shape, and it tells you how to read the second book of each:
+The LLM group is a stack, not a line. LangChain is the foundation; above it, **LangGraph and
+Deep Agents are alternatives at the same decision point**:
 
-> **First book: the thing. Second book: the orchestration layer you should adopt reluctantly.**
+> **Deep Agents is a ready-made harness. LangGraph is control flow you design.**
 
-Kubernetes Chapter 1 argues against adopting Kubernetes without a present constraint.
-LangGraph Chapter 1 argues that a hand-written `while` loop is a legitimate agent. Both mean
-it — read them when a requirement forces you, not to be thorough.
+And every book beyond the first of its group opens by trying to talk you out of itself.
+Kubernetes Chapter 1 argues against adopting Kubernetes without a constraint; LangGraph
+Chapter 1 argues a hand-written `while` loop is a legitimate agent; Deep Agents Chapter 1
+argues most agents should stay `create_agent`. They mean it — read them when a requirement
+forces you, not to be thorough.
 
 **[The full reading order](https://github.com/johandeclercqdemocon/langchain-docs/blob/main/BOOKS.md)**
 — five paths by goal, with chapter numbers, and what transfers between the books. It lives in
