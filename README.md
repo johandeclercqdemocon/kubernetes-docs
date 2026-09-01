@@ -30,6 +30,17 @@ are years out of date; the only defence is to check.
 
 Chapters end with **Try it** (runnable against your own cluster) and **Takeaways**.
 
+Prose rots. [`scripts/check_snippets.py`](scripts/check_snippets.py) checks what can be
+checked mechanically — that every internal link resolves, every `bash` block parses, and
+every `-f examples/...` file referenced by a command exists:
+
+```bash
+python3 scripts/check_snippets.py
+```
+
+`--run` additionally executes the commands against a live cluster, skipping those marked
+destructive and those containing placeholders.
+
 ## The cluster
 
 Everything here runs on a local `kind` cluster you can recreate in about a minute:
