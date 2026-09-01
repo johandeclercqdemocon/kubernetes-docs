@@ -163,6 +163,10 @@ Kubernetes Chapter 1 argues against adopting Kubernetes without a present constr
 LangGraph Chapter 1 argues that a hand-written `while` loop is a legitimate agent. Both mean
 it — read them when a requirement forces you, not to be thorough.
 
+**[The full reading order](https://github.com/johandeclercqdemocon/langchain-docs/blob/main/BOOKS.md)**
+— five paths by goal, with chapter numbers, and what transfers between the books. It lives in
+the LangChain repository but covers all four.
+
 ### You are here
 
 The second of the infrastructure pair. If you have not used containers, read **Docker**
