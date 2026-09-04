@@ -13,6 +13,8 @@ which covers images, containers and the single-host story. That book's Chapter 3
 you should not adopt Kubernetes without a present constraint. This one assumes you have
 one.
 
+**[Read it as a PDF](k8s-book.pdf)** — the whole book in one file, 214 pages, with a linked table of contents. Rebuild it with `python scripts/build_pdf.py` (needs `weasyprint markdown pygments`, which are deliberately not project dependencies).
+
 ## Who this is for
 
 Someone comfortable with containers who now has to run them on a cluster. You do not need
