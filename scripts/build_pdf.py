@@ -106,9 +106,9 @@ CODEHILITE = """
 """
 
 
-def read_title() -> tuple[str, str]:
+def read_title(base: pathlib.Path) -> tuple[str, str]:
     """Title and subtitle from README.md: the H1, then the first paragraph."""
-    readme = (ROOT / "README.md").read_text()
+    readme = (base / "README.md").read_text()
     title = next((l[2:].strip() for l in readme.splitlines() if l.startswith("# ")), ROOT.name)
     subtitle = ""
     seen_h1 = False
@@ -122,40 +122,89 @@ def read_title() -> tuple[str, str]:
     return title, subtitle
 
 
-def source_files() -> list[pathlib.Path]:
-    return sorted((ROOT / "chapters").glob("*.md")) + sorted((ROOT / "appendices").glob("*.md"))
+def source_files(base: pathlib.Path) -> list[pathlib.Path]:
+    """Chapters then appendices, each in filename order.
+
+    `base` is the repo root for the English book and `nl/` for the Dutch one;
+    the layout below it is identical, so one builder serves both.
+    """
+    return sorted((base / "chapters").glob("*.md")) + sorted((base / "appendices").glob("*.md"))
 
 
 def strip_links(text: str) -> str:
-    """Turn relative markdown links into plain text.
+    """Turn relative markdown links into plain text, leaving images alone.
 
     In a single-file PDF a link to `../appendices/e-solutions.md` resolves to
     nothing. Cross-references read fine as prose, and the section titles are in
     the table of contents.
+
+    The negative lookbehind is load-bearing: without it `![alt](fig.svg)` matches
+    as a link and becomes `!alt`, silently deleting every figure from the PDF
+    while leaving a stray exclamation mark behind.
     """
     def replace(match: re.Match) -> str:
         label, target = match.group(1), match.group(2)
         return label if not target.startswith(("http://", "https://", "mailto:")) else match.group(0)
 
-    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", replace, text)
+    return re.sub(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)", replace, text)
+
+
+def rebase_images(text: str, source: pathlib.Path) -> str:
+    """Rewrite image paths to be relative to the repo root.
+
+    Chapters live in `chapters/` and refer to `../figures/x.svg`, which is right
+    for GitHub. The PDF concatenates every file under one `base_url` of the repo
+    root, where `../figures/` points *outside* the repo.
+
+    WeasyPrint drops a missing image silently -- no warning, no error, no gap in
+    the page. The first build of this book shipped with every figure absent and
+    a PDF that looked entirely fine, which is why this function exists and why
+    `build_figures.py` output is checked into the tree rather than assumed.
+    """
+    def replace(match: re.Match) -> str:
+        alt, target = match.group(1), match.group(2)
+        if target.startswith(("http://", "https://", "data:")):
+            return match.group(0)
+        resolved = (source.parent / target).resolve()
+        try:
+            return f"![{alt}]({resolved.relative_to(ROOT)})"
+        except ValueError:
+            return match.group(0)
+
+    return re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", replace, text)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Typeset the book as a single PDF.")
     parser.add_argument("--out", default=None, help="output path (default <repo-name>.pdf)")
+    parser.add_argument("--source", default=".",
+                        help="directory holding README.md, chapters/ and appendices/ "
+                             "(default '.'; use 'nl' for the Dutch translation)")
     args = parser.parse_args()
 
-    title, subtitle = read_title()
-    files = source_files()
+    base = (ROOT / args.source).resolve()
+    title, subtitle = read_title(base)
+    files = source_files(base)
     if not files:
-        sys.exit("no chapters/*.md or appendices/*.md found")
+        sys.exit(f"no chapters/*.md or appendices/*.md under {base}")
+
+    missing = [
+        str(p) for f in files
+        for p in [(f.parent / m).resolve()
+                  for m in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", f.read_text())
+                  if not m.startswith(("http://", "https://", "data:"))]
+        if not p.exists()
+    ]
+    if missing:
+        sys.exit("figures referenced but not on disk (run scripts/build_figures.py):\n  "
+                 + "\n  ".join(missing))
 
     md = markdown.Markdown(extensions=["fenced_code", "tables", "codehilite", "attr_list"],
                            extension_configs={"codehilite": {"guess_lang": False}})
 
     sections, toc = [], []
     for i, path in enumerate(files):
-        text = strip_links(path.read_text())
+        text = rebase_images(strip_links(path.read_text()), path)
         heading = next((l[2:].strip() for l in text.splitlines() if l.startswith("# ")), path.stem)
         anchor = f"sec{i}"
         toc.append((anchor, heading, path.parent.name == "appendices"))
@@ -185,7 +234,8 @@ def main() -> int:
 {"".join(sections)}
 </body></html>"""
 
-    out = pathlib.Path(args.out) if args.out else ROOT / f"{ROOT.name}.pdf"
+    suffix = "" if base == ROOT else f"-{base.name}"
+    out = pathlib.Path(args.out) if args.out else ROOT / f"{ROOT.name}{suffix}.pdf"
     HTML(string=html, base_url=str(ROOT)).write_pdf(out)
     print(f"  {out.name}: {len(files)} sections, {words:,} words, "
           f"{out.stat().st_size / 1024:.0f} KB")
